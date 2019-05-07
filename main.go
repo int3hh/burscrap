@@ -13,7 +13,6 @@ import (
 	"github.com/akamensky/argparse"
 	"github.com/common-nighthawk/go-figure"
 	"github.com/gocolly/colly"
-	. "github.com/logrusorgru/aurora"
 )
 
 var date *string
@@ -44,10 +43,10 @@ func isNumeric(val string) bool {
 }
 
 func main() {
-	fmt.Printf("Collecting data from %s \n", Green("http://www.bursa.ro/ziar/"+*date))
+	fmt.Printf("Collecting data from %s \n", "http://www.bursa.ro/ziar/"+*date)
 	collect := colly.NewCollector(colly.AllowedDomains("www.bursa.ro"))
 	collect.OnRequest(func(r *colly.Request) {
-		fmt.Printf("Browsing to %s \n", Yellow(r.URL))
+		fmt.Printf("Browsing to %s \n", r.URL)
 	})
 	collect.OnHTML("header.caseta-medie-header a[href]", func(e *colly.HTMLElement) {
 		if strings.Contains(e.Request.URL.String(), "ziar/") {
@@ -64,13 +63,13 @@ func main() {
 		fil, err := os.Create(path.Join(dirpath, title))
 		if err == nil {
 			defer fil.Close()
-			fmt.Printf("Writing article : %s \n", Magenta(title))
+			fmt.Printf("Writing article : %s \n", title)
 			e.ForEach("p.par", func(_ int, elem *colly.HTMLElement) {
 				text := html.UnescapeString(elem.Text) + "\n"
 				fil.Write([]byte(text))
 			})
 		} else {
-			fmt.Printf("Could not write file %s : %s \n", Yellow(title), Red(err.Error()))
+			fmt.Printf("Could not write file %s : %s \n", title, err.Error())
 		}
 	})
 	collect.Visit("http://www.bursa.ro/ziar/" + *date)
