@@ -42,21 +42,34 @@ func isNumeric(val string) bool {
 	return err == nil
 }
 
+func scrapeNow(col *colly.Collector, e *colly.HTMLElement) {
+	if strings.Contains(e.Request.URL.String(), "ziar/") {
+		link := e.Attr("href")
+		links := strings.Split(link, "-")
+		if len(links) > 0 && isNumeric(links[len(links)-1]) {
+			col.Visit(e.Request.AbsoluteURL(link))
+		}
+	}
+}
+
 func main() {
 	fmt.Printf("Collecting data from %s \n", "http://www.bursa.ro/ziar/"+*date)
 	collect := colly.NewCollector(colly.AllowedDomains("www.bursa.ro"))
 	collect.OnRequest(func(r *colly.Request) {
 		fmt.Printf("Browsing to %s \n", r.URL)
 	})
-	collect.OnHTML("header.caseta-medie-header a[href]", func(e *colly.HTMLElement) {
-		if strings.Contains(e.Request.URL.String(), "ziar/") {
-			link := e.Attr("href")
-			links := strings.Split(link, "-")
-			if len(links) > 0 && isNumeric(links[len(links)-1]) {
-				collect.Visit(e.Request.AbsoluteURL(link))
-			}
-		}
+	collect.OnHTML("article.caseta-deschidere a[href]", func(e *colly.HTMLElement) {
+		scrapeNow(collect, e)
 	})
+
+	collect.OnHTML("header.caseta-medie-header a[href]", func(e *colly.HTMLElement) {
+		scrapeNow(collect, e)
+	})
+
+	collect.OnHTML("article.caseta-medie-1col a[href]", func(e *colly.HTMLElement) {
+		scrapeNow(collect, e)
+	})
+
 	collect.OnHTML("#articol-text", func(e *colly.HTMLElement) {
 		title := e.Request.URL.RequestURI()
 		title = title[1:strings.LastIndex(title, "-")] + ".txt"

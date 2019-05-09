@@ -4,7 +4,7 @@ PROJECTNAME := $(shell basename "$(PWD)")
 EXT:=.exe
 LDFLAGS=-ldflags "-s -w -X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
 
-.PHONY : clean win linux all
+.PHONY : all
 
 all: clean win linux
 clean:
